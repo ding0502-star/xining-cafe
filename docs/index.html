@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="在西寧咖啡經營自己的小店：服務顧客、調整售價、升級設備，享受一天的開店時光。">
+<title>西寧咖啡 · 線上遊玩</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#dce3d4;color:#354d43;font:16px/1.5 system-ui,"Microsoft JhengHei",sans-serif}header{height:54px;padding:8px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}header strong{font-size:18px;font-weight:600}button{font:inherit;cursor:pointer;border:0;border-radius:8px;padding:8px 18px;background:#4d7363;color:#fff5df}button:focus-visible{outline:3px solid #b98339;outline-offset:3px}button:disabled{opacity:.6;cursor:wait}main{display:flex;align-items:center;justify-content:center;min-height:calc(100dvh - 96px)}#stage{position:relative;width:min(100vw,calc((100dvh - 96px)*1.6));aspect-ratio:8/5;overflow:hidden;background:#dce3d4}canvas{display:block;width:100%;height:100%;outline:none}#cover{position:absolute;inset:0;display:grid;place-items:center;background:linear-gradient(#dce3d466,#223e4799),url('poster.png') center/cover}#loading{background:#fbf4e5;padding:26px 32px;border-radius:16px;text-align:center;max-width:90%;box-shadow:0 8px 40px #243d4429}#loading h1{margin:0 0 12px;font-size:28px}#loading p{margin:10px 0;font-size:16px}#meter{width:100%;accent-color:#4d7363;height:14px}#error{max-width:460px;white-space:pre-wrap}footer{min-height:42px;text-align:center;padding:8px 16px;font-size:14px}#stage:fullscreen{width:100vw;height:100dvh;aspect-ratio:auto;display:flex;justify-content:center;align-items:center;background:#354d43}#stage:fullscreen canvas{width:min(100vw,160dvh);height:min(62.5vw,100dvh)}@media(max-width:600px){header{padding:8px 12px}header strong{font-size:16px}footer{font-size:14px}#loading{padding:14px 22px}#loading h1{font-size:23px}}
+</style>
+<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
+<link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
+
+</head>
+<body>
+<header><strong>西寧咖啡 / XINING CAFE</strong><button id="fullscreen" type="button">全螢幕</button></header>
+<main><div id="stage"><canvas id="canvas" width="1280" height="800" tabindex="0" aria-label="西寧咖啡遊戲畫面"></canvas><div id="cover"><section id="loading"><h1>西寧咖啡</h1><p id="status" role="status">準備好經營今天的小店了嗎？</p><progress id="meter" max="100" value="0" hidden></progress><button id="start" type="button">進入咖啡店</button><p id="error" role="alert" hidden></p></section></div></div></main>
+<footer>進度保存在此瀏覽器；清除網站資料會刪除存檔。小螢幕請橫向遊玩。</footer>
+<script src="index.js"></script>
+<script>
+// Compressed engine transfer keeps each hosted asset small. Decompress locally
+// before passing a standard WebAssembly response to Godot's streaming loader.
+const nativeFetch = window.fetch.bind(window);
+window.fetch = async function(resource, init){
+ const requested = typeof resource === 'string' ? resource : (resource instanceof URL ? resource.href : resource.url);
+ const url = new URL(requested,location.href);
+ if(url.origin===location.origin && url.pathname.endsWith('/index.wasm')){
+   const packed=await nativeFetch(new URL('index.wasm.gz',url),init);
+   if(!packed.ok) throw Error('遊戲檔案下載失敗，請重新整理。');
+   return new Response(packed.body.pipeThrough(new DecompressionStream('gzip')),{headers:{'Content-Type':'application/wasm'}});
+ }
+ return nativeFetch(resource,init);
+};
+const config={"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":9045896,"index.wasm":37700666},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+config.canvas=document.getElementById('canvas');
+config.canvasResizePolicy=0;
+config.onProgress=(current,total)=>{document.getElementById('meter').value=total>0?current/total*100:0;};
+let state='ready';
+async function launch(){
+ if(state!=='ready') return;
+ state='loading';
+ const start=document.getElementById('start'),status=document.getElementById('status');
+ start.disabled=true;start.hidden=true;document.getElementById('meter').hidden=false;
+ status.textContent='正在準備店面，首次載入需要一點時間…';
+ try{
+  if(typeof DecompressionStream==='undefined')throw Error('請使用新版 Chrome、Edge、Firefox 或 Safari 開啟遊戲。');
+  const missing=Engine.getMissingFeatures({threads:false});
+  if(missing.length)throw Error('這個瀏覽器尚未支援遊戲需要的繪圖功能，請改用支援 WebGL 2 的瀏覽器。');
+  const engine=new Engine(config);
+  await engine.startGame();
+  state='playing';document.getElementById('cover').style.display='none';config.canvas.focus();
+ }catch(error){state='error';status.textContent='暫時無法開店';const message=document.getElementById('error');message.hidden=false;message.textContent=error.message||String(error);start.hidden=false;start.disabled=false;start.textContent='重新載入';start.onclick=()=>location.reload();}
+}
+document.getElementById('start').onclick=launch;
+document.getElementById('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.getElementById('stage').requestFullscreen();}catch{document.getElementById('fullscreen').textContent='請橫向遊玩';}};
+if(document.modelContext?.registerTool){
+ const lifecycle=new AbortController();
+ const validate=input=>{if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).length)throw Error('此操作不接受參數。');};
+ const register=tool=>{try{Promise.resolve(document.modelContext.registerTool(tool,{signal:lifecycle.signal})).catch(()=>{});}catch{}};
+ register({name:'get_cafe_loading_state',title:'查看咖啡店載入狀態',description:'Return ready, loading, playing, or error for this cafe game.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true},execute(input){validate(input);return {state};}});
+ register({name:'enter_cafe_game',title:'進入咖啡店',description:'Load and enter the cafe game, the same action as the visible enter button. Does not start a business day or load a save.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:false},async execute(input){validate(input);await launch();return {state};}});
+ window.addEventListener('pagehide',()=>lifecycle.abort(),{once:true});
+}
+</script>
+</body></html>
+
