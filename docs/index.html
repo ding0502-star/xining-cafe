@@ -9,8 +9,10 @@
 <link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
 <link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
 
+<style>#revision-date{position:fixed;right:10px;bottom:5px;z-index:10;margin:0;padding:2px 7px;border-radius:5px;background:#fbf4e5e8;color:#354d43;font-size:12px;pointer-events:none}</style>
 </head>
 <body>
+<p id="revision-date">改版日期：<time datetime="2026-09-21">2026/09/21</time></p>
 
 <main><div id="stage"><canvas id="canvas" width="1280" height="800" tabindex="0" aria-label="西寧咖啡遊戲畫面"></canvas><div id="cover"><section id="loading"><h1>西寧咖啡</h1><p id="status" role="status">準備好經營今天的小店了嗎？</p><progress id="meter" max="100" value="0" hidden></progress><button id="start" type="button">進入咖啡店</button><p id="error" role="alert" hidden></p></section></div></div></main>
 
@@ -29,7 +31,7 @@ window.fetch = async function(resource, init){
  }
  return nativeFetch(resource,init);
 };
-const config={"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":9661848,"index.wasm":37700666},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const config={"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":9662968,"index.wasm":37700666},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 config.canvas=document.getElementById('canvas');
 config.canvasResizePolicy=2;
 config.onProgress=(current,total)=>{document.getElementById('meter').value=total>0?current/total*100:0;};
